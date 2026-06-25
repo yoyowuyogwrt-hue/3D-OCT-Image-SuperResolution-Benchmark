@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+.env
+.venv/
+venv/
+
+# Data (too big for GitHub)
+data/
+
+# Mac
+.DS_Store
+
+# Jupyter
+.ipynb_checkpoints/

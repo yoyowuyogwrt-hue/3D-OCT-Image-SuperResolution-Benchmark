@@ -1,0 +1,8 @@
+OCT bicubic ×8 baseline on TX12_D0_A1L slice 256
+HR TIFF: TX12_D0_A1L_256.tif
+HR size (W×H): 512×1024
+LR size (W×H): 64×128
+16-bit window: 0.0 to 33552.8
+PSNR:  13.4997
+SSIM:  0.0750
+LPIPS: 1.0639

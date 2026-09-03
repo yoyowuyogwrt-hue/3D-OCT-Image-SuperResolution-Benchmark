@@ -1,0 +1,5 @@
+Bicubic: PSNR=25.0353, SSIM=0.6982, LPIPS=0.5522
+DIP:     PSNR=19.4976, SSIM=0.3641, LPIPS=0.6985
+Verdict: DIP does not improve all three metrics over bicubic.
+Delta (DIP - bicubic): PSNR=-5.5377, SSIM=-0.3342, LPIPS=+0.1463
+Note: checkpoint HR metrics are diagnostic only; they must not be used to select a test-image checkpoint.

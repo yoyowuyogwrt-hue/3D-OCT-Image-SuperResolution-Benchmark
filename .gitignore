@@ -8,6 +8,13 @@ venv/
 # Data (too big for GitHub)
 data/
 
+# Third-party code cloned locally (has its own git history)
+external/
+
+# Private working notes. This repo is public; project-context.mdc holds personal
+# information (appeal, assessment history) that must not be published.
+.cursor/
+
 # Mac
 .DS_Store
 

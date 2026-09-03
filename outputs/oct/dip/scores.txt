@@ -1,0 +1,8 @@
+OCT DIP vs bicubic, TX12_D0_A1L slice 256, centre 256x256 crop, x8
+Stopping rule: fixed 2000 iterations (not chosen from HR scores).
+Bicubic: PSNR=12.8748, SSIM=0.0631, LPIPS=1.0420
+DIP:     PSNR=12.2356, SSIM=0.0474, LPIPS=0.6696
+Verdict: DIP does not improve all three metrics over bicubic.
+Delta (DIP - bicubic): PSNR=-0.6392, SSIM=-0.0158, LPIPS=-0.3724
+Note: checkpoint HR metrics are diagnostic only; they must not be used to select a test-image checkpoint.
+Note: these scores are for the 256 crop, not the full 1024x512 B-scan bicubic run.

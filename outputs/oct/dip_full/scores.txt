@@ -1,0 +1,9 @@
+OCT DIP vs bicubic, TX12_D0_A1L slice 256, FULL B-scan (no crop), x8
+HR size (W×H): 512×1024
+Stopping rule: fixed 3000 iterations (not chosen from HR scores).
+Bicubic: PSNR=13.4997, SSIM=0.0750, LPIPS=1.0639
+DIP:     PSNR=13.1063, SSIM=0.0644, LPIPS=0.9486
+Verdict: DIP does not improve all three metrics over bicubic.
+Delta (DIP - bicubic): PSNR=-0.3934, SSIM=-0.0106, LPIPS=-0.1153
+Note: checkpoint HR metrics are diagnostic only; they must not be used to select a test-image checkpoint.
+Note: these scores are for the full 512x1024 B-scan, not the earlier 256 crop.

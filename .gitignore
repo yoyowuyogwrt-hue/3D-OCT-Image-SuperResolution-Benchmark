@@ -18,5 +18,8 @@ external/
 # Mac
 .DS_Store
 
+# Matplotlib local cache (created when ~/.matplotlib is not writable)
+.mplconfig/
+
 # Jupyter
 .ipynb_checkpoints/

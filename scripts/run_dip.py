@@ -27,6 +27,12 @@ from src.models.dip import train_dip
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run DIP on one DIV2K crop.")
     parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=PROJECT_ROOT / "outputs" / "dip",
+        help="Folder that already contains lr.png and hr_crop.png.",
+    )
+    parser.add_argument(
         "--iterations",
         type=int,
         default=2000,
@@ -37,6 +43,12 @@ def parse_args() -> argparse.Namespace:
         type=int,
         default=8,
         help="Super-resolution scale factor (default: 8).",
+    )
+    parser.add_argument(
+        "--downsample",
+        choices=("bicubic", "stride", "filtered_stride"),
+        default="bicubic",
+        help="Must match how lr.png was made (default: bicubic).",
     )
     parser.add_argument(
         "--seed",
@@ -94,7 +106,7 @@ def save_comparison(
     for axis, image, title in zip(
         axes,
         (hr, bicubic, dip),
-        ("HR reference", "Bicubic", "DIP"),
+        ("HR reference", "Bicubic upsample", "DIP"),
     ):
         axis.imshow(image)
         axis.set_title(title)
@@ -136,13 +148,15 @@ def save_metric_curves(
 
 def main() -> None:
     args = parse_args()
-    output_dir = PROJECT_ROOT / "outputs" / "dip"
+    output_dir = args.output_dir
     lr_path = output_dir / "lr.png"
     hr_path = output_dir / "hr_crop.png"
 
     if not lr_path.exists() or not hr_path.exists():
         raise FileNotFoundError(
-            "lr.png or hr_crop.png is missing. Run `python scripts/make_lr.py` first."
+            "lr.png or hr_crop.png is missing. "
+            "For the old bicubic ×8 pair run `python scripts/make_lr.py`. "
+            "For the natural-image pair run `python scripts/prepare_natural_sanity.py`."
         )
 
     torch.manual_seed(args.seed)
@@ -166,12 +180,16 @@ def main() -> None:
         )
 
     print(f"Loaded LR image: {lr_path} ({lr_image.size})")
-    print(f"Training DIP for {args.iterations} iterations at x{args.scale}...")
+    print(
+        f"Training DIP for {args.iterations} iterations at x{args.scale} "
+        f"with {args.downsample} downsampling..."
+    )
     dip_tensor, losses = train_dip(
         image_to_tensor(lr_image),
         scale=args.scale,
         num_iter=args.iterations,
         ema_decay=args.ema_decay,
+        downsample=args.downsample,
         checkpoint_iterations=tuple(checkpoint_iterations),
         checkpoint_callback=keep_checkpoint,
     )
@@ -211,13 +229,14 @@ def main() -> None:
     )
 
     score_lines = [
+        f"Degradation: {args.downsample} ×{args.scale} (DIP forward operator matches this).",
         (
-            f"Bicubic: PSNR={bicubic_scores['PSNR']:.4f}, "
+            f"Bicubic upsample: PSNR={bicubic_scores['PSNR']:.4f}, "
             f"SSIM={bicubic_scores['SSIM']:.4f}, "
             f"LPIPS={bicubic_scores['LPIPS']:.4f}"
         ),
         (
-            f"DIP:     PSNR={dip_scores['PSNR']:.4f}, "
+            f"DIP:              PSNR={dip_scores['PSNR']:.4f}, "
             f"SSIM={dip_scores['SSIM']:.4f}, "
             f"LPIPS={dip_scores['LPIPS']:.4f}"
         ),

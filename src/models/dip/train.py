@@ -16,7 +16,7 @@ import torch
 import torch.nn.functional as F
 from tqdm import tqdm
 
-from src.degradation import bicubic_downsample
+from src.degradation import get_downsample
 
 from .unet import SkipUNet
 
@@ -38,6 +38,7 @@ def train_dip(
     input_depth: int = 32,
     reg_noise_std: float = 0.03,
     ema_decay: float = 0.9,
+    downsample: str = "bicubic",
     checkpoint_iterations: tuple[int, ...] = (),
     checkpoint_callback: Callable[[int, torch.Tensor], None] | None = None,
     device: torch.device | None = None,
@@ -54,6 +55,8 @@ def train_dip(
         input_depth: The number of channels in my fixed random-noise input.
         reg_noise_std: Extra noise I add to reduce overfitting.
         ema_decay: How strongly I smooth consecutive outputs (0 disables averaging).
+        downsample: Must match how the LR image was made
+            (`bicubic`, `stride`, or `filtered_stride`).
         checkpoint_iterations: One-based iterations whose averaged outputs I save.
         checkpoint_callback: A function that receives each checkpoint image.
         device: The CPU or GPU used for training. I detect it if this is None.
@@ -70,6 +73,7 @@ def train_dip(
         device = get_device()
 
     lr = lr.to(device)
+    downsample_fn = get_downsample(downsample)
     _, _, lr_h, lr_w = lr.shape
     hr_h, hr_w = lr_h * scale, lr_w * scale
 
@@ -99,7 +103,7 @@ def train_dip(
             net_input = net_input_saved
 
         hr_guess = net(net_input)
-        lr_guess = bicubic_downsample(hr_guess, scale)
+        lr_guess = downsample_fn(hr_guess, scale)
         loss = F.mse_loss(lr_guess, lr)
 
         loss.backward()

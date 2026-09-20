@@ -2,7 +2,7 @@
 
 Step-by-step for me (and for the methods chapter). Two places of work:
 
-- **My Mac / Cursor Terminal** — make the small image, run DIP
+- **My Mac terminal** — make the small image, run DIP
 - **Google Colab** — run BATDiff (it needs an NVIDIA GPU; my Mac cannot run the unmodified BATDiff code)
 
 Do DIP first. Do BATDiff second. Do not skip to OCT, and do not pass a DIP image into BATDiff yet.
@@ -11,10 +11,10 @@ Do DIP first. Do BATDiff second. Do not skip to OCT, and do not pass a DIP image
 
 ## Part A — DIP on my Mac
 
-### A1. Open a Terminal in Cursor
+### A1. Open a Terminal on my Mac
 
-1. In Cursor, click **Terminal → New Terminal** (or press `` Ctrl+` ``).
-2. A panel opens at the bottom. I type commands there and press **Return** after each line.
+1. I open Terminal.
+2. I type commands there and press **Return** after each line.
 
 If the prompt does not already sit in the project folder, I go there:
 

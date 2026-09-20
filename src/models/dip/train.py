@@ -43,6 +43,7 @@ def train_dip(
     checkpoint_callback: Callable[[int, torch.Tensor], None] | None = None,
     device: torch.device | None = None,
     show_progress: bool = True,
+    use_amp: bool = False,
 ) -> tuple[torch.Tensor, list[float]]:
     """
     I fit a randomly initialised U-Net so its downscaled output matches `lr`.
@@ -61,6 +62,7 @@ def train_dip(
         checkpoint_callback: A function that receives each checkpoint image.
         device: The CPU or GPU used for training. I detect it if this is None.
         show_progress: Whether I display a progress bar.
+        use_amp: Use CUDA mixed precision to reduce GPU memory usage.
 
     Returns:
         hr_estimate: My averaged high-resolution estimate after the final iteration.
@@ -71,6 +73,8 @@ def train_dip(
 
     if device is None:
         device = get_device()
+    if use_amp and device.type != "cuda":
+        raise ValueError("Mixed precision is only supported on CUDA in this experiment.")
 
     lr = lr.to(device)
     downsample_fn = get_downsample(downsample)
@@ -79,6 +83,7 @@ def train_dip(
 
     net = SkipUNet(input_depth=input_depth, output_depth=3).to(device)
     optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate)
+    scaler = torch.amp.GradScaler("cuda", enabled=use_amp)
 
     # I create a fixed random-noise input with my target image size.
     net_input = torch.randn(1, input_depth, hr_h, hr_w, device=device)
@@ -93,7 +98,7 @@ def train_dip(
         iterator = tqdm(iterator, desc="DIP training", leave=True)
 
     for iteration_index in iterator:
-        optimizer.zero_grad()
+        optimizer.zero_grad(set_to_none=True)
 
         # I slightly change the noise at each step to reduce overfitting.
         if reg_noise_std > 0:
@@ -102,12 +107,14 @@ def train_dip(
         else:
             net_input = net_input_saved
 
-        hr_guess = net(net_input)
-        lr_guess = downsample_fn(hr_guess, scale)
-        loss = F.mse_loss(lr_guess, lr)
+        with torch.amp.autocast("cuda", dtype=torch.float16, enabled=use_amp):
+            hr_guess = net(net_input)
+            lr_guess = downsample_fn(hr_guess, scale)
+            loss = F.mse_loss(lr_guess, lr)
 
-        loss.backward()
-        optimizer.step()
+        scaler.scale(loss).backward()
+        scaler.step(optimizer)
+        scaler.update()
 
         loss_value = float(loss.item())
         losses.append(loss_value)

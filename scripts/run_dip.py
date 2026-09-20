@@ -57,6 +57,17 @@ def parse_args() -> argparse.Namespace:
         help="Random seed for a reproducible run (default: 0).",
     )
     parser.add_argument(
+        "--input-depth",
+        type=int,
+        default=32,
+        help="Channels in DIP's random-noise input (default: 32).",
+    )
+    parser.add_argument(
+        "--amp",
+        action="store_true",
+        help="Use CUDA mixed precision to reduce GPU memory.",
+    )
+    parser.add_argument(
         "--checkpoints",
         type=int,
         nargs="+",
@@ -188,8 +199,10 @@ def main() -> None:
         image_to_tensor(lr_image),
         scale=args.scale,
         num_iter=args.iterations,
+        input_depth=args.input_depth,
         ema_decay=args.ema_decay,
         downsample=args.downsample,
+        use_amp=args.amp,
         checkpoint_iterations=tuple(checkpoint_iterations),
         checkpoint_callback=keep_checkpoint,
     )

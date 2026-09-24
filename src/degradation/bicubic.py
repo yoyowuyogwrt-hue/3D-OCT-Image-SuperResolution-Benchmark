@@ -1,4 +1,4 @@
-"""Shared differentiable bicubic degradation for synthetic SR experiments."""
+"""Bicubic downsample I use for the synthetic SR experiment. It can backward."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ import torch.nn.functional as F
 
 
 def bicubic_downsample(image: torch.Tensor, scale: int) -> torch.Tensor:
-    """Downsample a BCHW image tensor using the operator fitted by DIP."""
+    """Downsample a BCHW tensor. DIP fit this same operator, so train and test match."""
     if image.ndim != 4:
         raise ValueError("image must have shape (batch, channels, height, width).")
     if scale < 1:
@@ -22,6 +22,6 @@ def bicubic_downsample(image: torch.Tensor, scale: int) -> torch.Tensor:
         size=(height // scale, width // scale),
         mode="bicubic",
         align_corners=False,
-        # MPS does not implement the antialiased bicubic backward operation.
+        # antialias=False, because MPS cannot backward through antialiased bicubic.
         antialias=False,
     )

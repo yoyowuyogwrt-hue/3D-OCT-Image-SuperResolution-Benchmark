@@ -1,7 +1,7 @@
-"""Run DIP on the full OCT B-scan (not a crop) and compare it with bicubic.
+"""Run DIP on the full OCT B-scan (no crop) and compare with bicubic.
 
-I reuse the 8-bit HR B-scan from scripts/oct_bicubic_baseline.py so the
-intensity window stays the same as the published full-slice bicubic baseline.
+I reuse the 8-bit HR from scripts/oct_bicubic_baseline.py, so the intensity
+window is the same as the full-slice bicubic baseline I already saved.
 """
 
 from __future__ import annotations

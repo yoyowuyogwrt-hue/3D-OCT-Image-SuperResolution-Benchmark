@@ -1,0 +1,9 @@
+Degradation: filtered_stride x4. BATDiff x_ref = DIP reconstruction (20k steps).
+Bicubic and DIP rows are official Phase A scores. BATDiff alone is Phase B.
+DIP+BATDiff scored on Mac from finest-scale sample _s5_.
+Bicubic upsample: PSNR=24.2382, SSIM=0.6569, LPIPS=0.4600
+DIP alone: PSNR=27.8954, SSIM=0.8065, LPIPS=0.2929
+BATDiff alone (4000, published x_ref): PSNR=10.7399, SSIM=0.0602, LPIPS=0.7273
+BATDiff (DIP x_ref, 20000): PSNR=9.9268, SSIM=0.0460, LPIPS=0.7323
+Coarsest _s0_: PSNR=9.9491, SSIM=0.0492, LPIPS=0.7592
+Visual: DIP+BATDiff finest-scale sample is noise, not a photograph.

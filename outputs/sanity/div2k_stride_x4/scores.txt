@@ -1,0 +1,6 @@
+Degradation: stride ×4 (DIP forward operator matches this).
+Bicubic upsample: PSNR=26.4232, SSIM=0.7531, LPIPS=0.3176
+DIP:              PSNR=26.9645, SSIM=0.6947, LPIPS=0.3785
+Verdict: DIP does not improve all three metrics over bicubic.
+Delta (DIP - bicubic): PSNR=+0.5412, SSIM=-0.0584, LPIPS=+0.0610
+Note: checkpoint HR metrics are diagnostic only; they must not be used to select a test-image checkpoint.

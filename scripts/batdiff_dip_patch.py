@@ -1,21 +1,19 @@
-"""Patch a BATDiff checkout so its reference image can come from DIP instead of bicubic.
+"""Patch BATDiff so the reference image can come from DIP, not only bicubic.
 
-BATDiff builds every one of its training targets from a single reference image
-`x_ref`. In the released code `x_ref` is the low-resolution input stretched back
-up with bicubic interpolation, which carries no real high-frequency content. The
-a trous wavelet decomposition is then computed on that reference, so each scale
-the diffusion model learns is derived from interpolated detail.
+BATDiff make all the training target from one reference image `x_ref`.
+In the original code, `x_ref` is just the LR image bicubic upsample, so
+there is no real high frequency. Then a trous wavelet run on this image,
+so every scale the diffusion model learn is from this interpolated detail.
 
-The contribution of this project is to substitute a Deep Image Prior
-reconstruction for that bicubic reference. Because the substitution happens
-before the wavelet decomposition, it changes what the diffusion model is trained
-to reproduce, rather than post-processing whatever it produces.
+My change is to replace this bicubic reference by a DIP result. I do it
+before the wavelet, so the model is trained on different target. It is
+not a post-process after the model already finish.
 
 Usage:
     python scripts/batdiff_dip_patch.py --batdiff-root external/BATDiff
     python scripts/batdiff_dip_patch.py --batdiff-root external/BATDiff --check
 
-The script is idempotent: running it twice leaves the checkout unchanged.
+Run two times is ok. The second time it will not change the code again.
 """
 
 from __future__ import annotations
@@ -30,7 +28,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 @dataclass(frozen=True)
 class Edit:
-    """One exact-string substitution inside one file of the BATDiff checkout."""
+    """One exact string replace in one file of the BATDiff folder."""
 
     relative_path: str
     label: str
@@ -45,7 +43,7 @@ class Edit:
 
 
 # --------------------------------------------------------------------------
-# Contribution: route the wavelet reference through an external image.
+# My part: let the wavelet reference come from an outside image (DIP).
 # --------------------------------------------------------------------------
 
 CONTRIBUTION_EDITS: tuple[Edit, ...] = (
@@ -120,7 +118,7 @@ CONTRIBUTION_EDITS: tuple[Edit, ...] = (
 
 
 # --------------------------------------------------------------------------
-# Compatibility: unrelated to the contribution, needed to run on current Colab.
+# Just to make it run on current Colab. Not my method contribution.
 # --------------------------------------------------------------------------
 
 COMPATIBILITY_EDITS: tuple[Edit, ...] = (
@@ -156,7 +154,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def apply_edits(root: Path, edits: tuple[Edit, ...], check_only: bool) -> tuple[int, int]:
-    """Apply `edits` under `root`. Returns (n_applied_now, n_already_applied)."""
+    """Apply `edits` under `root`. Return (how many I just change, how many already done)."""
     applied = 0
     already = 0
 

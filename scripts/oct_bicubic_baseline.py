@@ -1,8 +1,7 @@
-"""Walk through one OCT B-scan and score a bicubic ×8 baseline.
+"""Do one OCT B-scan and score the bicubic x8 baseline.
 
-I treat the original B-scan as the high-resolution (HR) reference. I shrink it
-by ×8 to make a synthetic low-resolution (LR) image, enlarge it again with
-bicubic interpolation, and score that reconstruction with PSNR, SSIM and LPIPS.
+I take the original B-scan as HR. I shrink it x8 to make a fake LR, then
+bicubic upsample back, and score with PSNR, SSIM and LPIPS.
 """
 
 from __future__ import annotations
@@ -37,12 +36,11 @@ OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def uint16_to_uint8(raw: np.ndarray) -> tuple[np.ndarray, float, float]:
-    """Turn a 16-bit OCT slice into an 8-bit image I can score like DIV2K.
+    """Change 16-bit OCT slice to 8-bit, so I can score it like DIV2K.
 
-    Most pixels sit well below the 16-bit maximum, so a naive /65535 stretch
-    would look almost black. I clip to the 0.5th–99.5th percentiles of this
-    slice, then scale that window to 0–255. I do this once and then keep the
-    8-bit image as my HR reference for the rest of the experiment.
+    Most pixel is much smaller than 65535, so if I just /65535 the image
+    is almost black. I clip to 0.5% ~ 99.5% of this slice, then scale to
+    0-255. I only do this one time, and after that this 8-bit image is my HR.
     """
     low, high = np.percentile(raw, (0.5, 99.5))
     if high <= low:
@@ -54,7 +52,7 @@ def uint16_to_uint8(raw: np.ndarray) -> tuple[np.ndarray, float, float]:
 
 
 def gray_to_rgb(gray: np.ndarray) -> np.ndarray:
-    """Copy the one channel three times so LPIPS (trained on RGB) can run."""
+    """Copy the grey channel 3 times. LPIPS is trained on RGB so it need 3 channel."""
     return np.stack([gray, gray, gray], axis=2)
 
 

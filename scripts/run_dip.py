@@ -1,8 +1,7 @@
-"""Run the complete 2D DIV2K Deep Image Prior experiment.
+"""Run my 2D DIV2K Deep Image Prior experiment.
 
-This script loads the prepared low-resolution image, trains DIP, saves its
-reconstruction, and compares it with bicubic interpolation against the
-high-resolution reference image.
+I load the LR image I prepared, train DIP, save the result, and compare
+with bicubic upsample. The score is against the HR image.
 """
 
 from __future__ import annotations
@@ -84,13 +83,13 @@ def parse_args() -> argparse.Namespace:
 
 
 def image_to_tensor(image: Image.Image) -> torch.Tensor:
-    """Convert an RGB PIL image to a (1, 3, H, W) float tensor."""
+    """PIL RGB image -> float tensor (1, 3, H, W)."""
     array = np.asarray(image, dtype=np.float32) / 255.0
     return torch.from_numpy(array).permute(2, 0, 1).unsqueeze(0)
 
 
 def tensor_to_image(tensor: torch.Tensor) -> Image.Image:
-    """Convert a (1, 3, H, W) float tensor to an RGB PIL image."""
+    """Float tensor (1, 3, H, W) -> PIL RGB image."""
     array = tensor.squeeze(0).permute(1, 2, 0).numpy()
     array = np.clip(np.rint(array * 255.0), 0, 255).astype(np.uint8)
     return Image.fromarray(array, mode="RGB")
@@ -132,7 +131,7 @@ def save_metric_curves(
     bicubic_scores: dict[str, float],
     path: Path,
 ) -> None:
-    """Plot checkpoint metrics for diagnosis, not for test-time model selection."""
+    """Plot the checkpoint scores so I can see the training. I don't use this to pick the best model."""
     iterations = [int(row["iteration"]) for row in checkpoint_rows]
     fig, axes = plt.subplots(1, 3, figsize=(12, 3.5))
     for axis, metric, higher_is_better in zip(

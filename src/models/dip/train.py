@@ -1,11 +1,10 @@
 """
 Here I train my Deep Image Prior network.
 
-At each iteration, I pass noise through the U-Net to create a
-high-resolution estimate. I shrink this estimate and compare it with my
-low-resolution image using MSE loss. I then update the network to reduce
-the error. I do not give the original high-resolution image to the network
-during training.
+Every step I put noise into the U-Net and it give me a HR guess. Then I
+downsample this guess and compare with my LR image by MSE. After that I
+update the weights to make the loss smaller. I never show the real HR
+image to the network when I train, because DIP should only see the LR.
 """
 
 from __future__ import annotations
@@ -22,7 +21,7 @@ from .unet import SkipUNet
 
 
 def get_device() -> torch.device:
-    """I use an available GPU when possible and otherwise use the CPU."""
+    """I use GPU if the computer has one. MPS first, then CUDA, or just CPU."""
     if torch.backends.mps.is_available():
         return torch.device("mps")
     if torch.cuda.is_available():
@@ -46,27 +45,27 @@ def train_dip(
     use_amp: bool = False,
 ) -> tuple[torch.Tensor, list[float]]:
     """
-    I fit a randomly initialised U-Net so its downscaled output matches `lr`.
+    I fit a random U-Net so after downsample, the output is close to `lr`.
 
     Args:
-        lr: My blurry image, with shape (1, 3, h, w) and values from 0 to 1.
-        scale: How much larger I make the output (8 changes 32 into 256).
-        num_iter: The number of training iterations I use.
-        learning_rate: The size of each update to the network weights.
-        input_depth: The number of channels in my fixed random-noise input.
-        reg_noise_std: Extra noise I add to reduce overfitting.
-        ema_decay: How strongly I smooth consecutive outputs (0 disables averaging).
-        downsample: Must match how the LR image was made
+        lr: My LR image, shape (1, 3, h, w), pixel value from 0 to 1.
+        scale: How many times bigger the output is (8 means 32 become 256).
+        num_iter: How many step I train.
+        learning_rate: How big each weight update is.
+        input_depth: Channel number of the fixed noise input.
+        reg_noise_std: Small extra noise, so the network not overfit too fast.
+        ema_decay: How much I average the outputs. 0 means I don't average.
+        downsample: Must be the same way I made the LR image
             (`bicubic`, `stride`, or `filtered_stride`).
-        checkpoint_iterations: One-based iterations whose averaged outputs I save.
-        checkpoint_callback: A function that receives each checkpoint image.
-        device: The CPU or GPU used for training. I detect it if this is None.
-        show_progress: Whether I display a progress bar.
-        use_amp: Use CUDA mixed precision to reduce GPU memory usage.
+        checkpoint_iterations: Which step (start from 1) I want to save.
+        checkpoint_callback: A function I call when I save a checkpoint.
+        device: CPU or GPU. If None I pick it myself.
+        show_progress: If True I show the progress bar.
+        use_amp: On CUDA I use mixed precision, so it use less GPU memory.
 
     Returns:
-        hr_estimate: My averaged high-resolution estimate after the final iteration.
-        losses: The MSE loss from each iteration, which I can plot later.
+        hr_estimate: The averaged HR image after the last step.
+        losses: MSE of every step, I can plot this later.
     """
     if not 0 <= ema_decay < 1:
         raise ValueError("ema_decay must be between 0 (inclusive) and 1 (exclusive).")
@@ -85,7 +84,7 @@ def train_dip(
     optimizer = torch.optim.Adam(net.parameters(), lr=learning_rate)
     scaler = torch.amp.GradScaler("cuda", enabled=use_amp)
 
-    # I create a fixed random-noise input with my target image size.
+    # The noise is fixed and the size is the HR size I want. DIP paper do it like this.
     net_input = torch.randn(1, input_depth, hr_h, hr_w, device=device)
     net_input_saved = net_input.detach().clone()
 
@@ -100,7 +99,7 @@ def train_dip(
     for iteration_index in iterator:
         optimizer.zero_grad(set_to_none=True)
 
-        # I slightly change the noise at each step to reduce overfitting.
+        # I change the noise a little every step, otherwise it overfit very quick.
         if reg_noise_std > 0:
             noise = torch.randn_like(net_input_saved) * reg_noise_std
             net_input = net_input_saved + noise
@@ -119,7 +118,7 @@ def train_dip(
         loss_value = float(loss.item())
         losses.append(loss_value)
 
-        # Averaging consecutive outputs suppresses unstable high-frequency noise.
+        # One step output is quite noisy, so I average it with the previous ones.
         current_out = hr_guess.detach()
         if output_average is None:
             output_average = current_out.clone()

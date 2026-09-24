@@ -1,10 +1,9 @@
-"""Prepare one full DIV2K photograph for the natural-image sanity check.
+"""Prepare one full DIV2K photo for the natural image sanity check.
 
-Default: no crop, scale ×4 (every fourth row and column) after a Gaussian
-low-pass. This is not bicubic shrinking.
+Default I don't crop. Scale is x4, so I blur then take every 4th pixel.
+This is not bicubic shrink.
 
-This script only makes the HR/LR pair and a degradation figure. It does not
-run DIP or BATDiff.
+This script only make the HR/LR pair and one figure. It not run DIP or BATDiff.
 """
 
 from __future__ import annotations
@@ -77,9 +76,9 @@ def centre_crop(image: Image.Image, crop_size: int) -> Image.Image:
 
 
 def trim_to_multiple(image: Image.Image, multiple: int) -> Image.Image:
-    """Drop the right/bottom edge so width and height divide `multiple`.
+    """Cut the right and bottom edge so width and height can divide `multiple`.
 
-    DIP's U-Net pools twice, so the HR size must also be divisible by 4.
+    U-Net pool two times, so HR size also need divide by 4.
     """
     width, height = image.size
     step = multiple
@@ -100,7 +99,7 @@ def save_degradation_figure(
     scale: int,
     path: Path,
 ) -> None:
-    """HR vs skip-only vs official blur-then-stride. No bicubic downsample."""
+    """Compare HR, stride only, and blur-then-stride. No bicubic here."""
     hr_size = hr.size
     panels = [
         (hr, "HR (original)"),
@@ -142,7 +141,7 @@ def main() -> None:
     if args.crop_size:
         hr = centre_crop(hr, args.crop_size)
         print(f"Centre crop: {hr.size}")
-    # Divisible by scale, and by 4 so DIP's U-Net can pool twice.
+    # Size must divide scale, and also divide 4, because U-Net pool two times.
     hr = trim_to_multiple(hr, multiple=max(args.scale, 4))
 
     hr_tensor = image_to_tensor(hr)

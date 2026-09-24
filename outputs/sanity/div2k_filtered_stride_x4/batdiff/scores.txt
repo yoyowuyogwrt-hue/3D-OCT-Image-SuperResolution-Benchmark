@@ -1,0 +1,8 @@
+Degradation: filtered_stride x4. BATDiff published x_ref = bicubic upsample of LR.
+Bicubic and DIP rows are the official Phase A scores (scores.txt). BATDiff scored on Mac from finest-scale sample _s5_.
+Bicubic upsample: PSNR=24.2382, SSIM=0.6569, LPIPS=0.4600
+DIP alone:        PSNR=27.8954, SSIM=0.8065, LPIPS=0.2929
+BATDiff alone:    PSNR=10.7399, SSIM=0.0602, LPIPS=0.7273
+Delta (BATDiff - bicubic): PSNR=-13.4983, SSIM=-0.5967, LPIPS=+0.2673
+Delta (BATDiff - DIP): PSNR=-17.1555, SSIM=-0.7463, LPIPS=+0.4344
+Visual: BATDiff finest-scale sample is noise, not a photograph. Phase B fail.

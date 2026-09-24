@@ -1,15 +1,14 @@
-"""Regular-grid downsampling: keep every Nth row and column.
+"""Downsample by keeping every Nth row and column.
 
-×2 keeps every other pixel (`::2`). ×4 keeps every fourth (`::4`).
+x2 is `::2`, x4 is `::4`.
 
-Raw stride aliases: high-frequency detail folds into fake low-frequency
-patterns. The supervisor's full recipe is therefore a low-pass filter first,
-then this stride. `filtered_stride_downsample` does that with torchvision's
-existing `gaussian_blur`, not a hand-written kernel.
+If I only do stride, high frequency will alias and look like fake low
+frequency pattern. Supervisor said I should blur first, then stride.
+`filtered_stride_downsample` use torchvision `gaussian_blur`, I don't
+write my own kernel.
 
-PyTorch/PIL bicubic is an interpolator. Our previous bicubic downsample also
-sets `antialias=False`, because MPS cannot back-propagate through antialiased
-bicubic. That is why bicubic is not used to *create* the LR image.
+Bicubic in PyTorch/PIL is interpolation, and I also set `antialias=False`
+because MPS cannot backward it. So I don't use bicubic to *make* the LR.
 """
 
 from __future__ import annotations
@@ -31,18 +30,18 @@ def _require_bchw_and_scale(image: torch.Tensor, scale: int) -> None:
 
 
 def stride_downsample(image: torch.Tensor, scale: int) -> torch.Tensor:
-    """Keep every `scale`-th pixel. No blur — this aliases on its own."""
+    """Keep every `scale` pixel. No blur, so it will alias."""
     _require_bchw_and_scale(image, scale)
     return image[..., ::scale, ::scale]
 
 
 def filtered_stride_downsample(image: torch.Tensor, scale: int) -> torch.Tensor:
-    """Gaussian low-pass, then keep every `scale`-th pixel.
+    """Gaussian blur first, then keep every `scale` pixel.
 
-    The blur uses torchvision.transforms.functional.gaussian_blur. Sigma is
-    `scale / 2`, a standard choice so the cutoff sits near the new Nyquist
-    frequency. The kernel width is the usual 3-sigma support; that is a
-    parameter of the existing function, not a custom filter.
+    I use torchvision.transforms.functional.gaussian_blur. Sigma is
+    `scale / 2`, this is a common choice so the cutoff is near the new
+    Nyquist frequency. Kernel width is about 3 sigma, this is just the
+    parameter of that function, not a filter I design myself.
     """
     _require_bchw_and_scale(image, scale)
     if scale == 1:

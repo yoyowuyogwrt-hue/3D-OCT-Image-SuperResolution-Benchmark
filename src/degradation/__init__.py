@@ -9,7 +9,7 @@ DownsampleFn = Callable[[torch.Tensor, int], torch.Tensor]
 
 
 def get_downsample(name: str) -> DownsampleFn:
-    """Return the HR→LR operator used both to make the LR image and inside DIP."""
+    """Return the HR to LR function. I use the same one to make LR and inside DIP."""
     if name == "bicubic":
         return bicubic_downsample
     if name == "stride":

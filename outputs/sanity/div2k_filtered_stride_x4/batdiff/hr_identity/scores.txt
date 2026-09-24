@@ -1,0 +1,4 @@
+Identity probe: 256 crop of HR penguin, sr_factor=1, dim=200, ts=4, train_num_steps=101 (README defaults).
+Not a super-resolution result. Pass/fail is visual: photo vs noise.
+BATDiff vs HR crop: PSNR=9.1337, SSIM=0.0347, LPIPS=0.6554
+Visual: noise, not penguin plumage. Identity probe fail.

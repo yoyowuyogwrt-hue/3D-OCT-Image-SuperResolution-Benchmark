@@ -1,0 +1,7 @@
+Degradation: filtered_stride x4. BATDiff x_ref = DIP reconstruction. train_num_steps=120000 (paper length), dim=64, continued from 20k checkpoint.
+Bicubic and DIP are official Phase A scores. BATDiff (DIP ref) from Colab Step 8; Mac copy of finest-scale _s5_ 2026-09-20.
+Bicubic upsample:     PSNR=24.2382, SSIM=0.6569, LPIPS=0.4600
+DIP alone:            PSNR=27.8954, SSIM=0.8065, LPIPS=0.2929
+BATDiff (DIP ref, 20k): PSNR=9.9268, SSIM=0.0460, LPIPS=0.7323
+BATDiff (DIP ref, 120k): PSNR=9.0670, SSIM=0.0432, LPIPS=0.7242
+Visual: 120k finest-scale sample is noise, not a photograph. Paper-length DIP+BATDiff fails the visual rule.

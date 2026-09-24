@@ -1,0 +1,10 @@
+Overnight identity: DIV2K 0806 centre 256 crop, sr_factor=1, dim=200, ts=4, train_num_steps=20000.
+8 checkpoints (every 2500 steps). Finest-scale sample timestamp 03:12 on 16 Sep 2026.
+Not a super-resolution result. Pass/fail is visual: photo vs smear vs noise.
+
+BATDiff s5 vs HR crop: PSNR=10.3930, SSIM=0.1422, LPIPS=0.6206
+BATDiff s0 vs HR crop: PSNR=10.4268, SSIM=0.1991, LPIPS=0.6656
+
+Visual: not TV snow. Sky and cloud colour are there; palm fronds are smeared brown streaks, not a complete leaflet. Sample-1 (2.5k) is grainier; sample-8 (20k) is smoother but still incomplete.
+Smoke test on the same scene was noise (PSNR 7.79). 20k steps recovered scene colour/structure, not a sharp photo.
+Paper reports 120k steps on H100.

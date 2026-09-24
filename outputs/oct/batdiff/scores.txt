@@ -1,0 +1,14 @@
+OCT BATDiff vs DIP vs bicubic, TX12_D0_A1L slice 256, FULL B-scan, x8
+HR size (W×H): 512×1024
+Protocol: two BATDiff runs, identical settings; only the wavelet reference x_ref changes.
+Run A (baseline): x_ref = bicubic upsample of LR (upstream BATDiff).
+Run B (contribution): x_ref = DIP reconstruction from outputs/oct/dip_full/.
+Settings (notebook full run, not smoke test): dim=64, train_num_steps=4000, timesteps=100, atrous_level=6, sr_factor=8.
+Bicubic ×8:            PSNR=13.4997, SSIM=0.0750, LPIPS=1.0639
+DIP alone:             PSNR=13.1063, SSIM=0.0644, LPIPS=0.9486
+BATDiff (bicubic ref): PSNR=11.3639, SSIM=0.0236, LPIPS=0.9800
+BATDiff (DIP ref):     PSNR=10.9536, SSIM=0.0179, LPIPS=0.8830
+Contribution (DIP ref − bicubic ref): PSNR=-0.4103, SSIM=-0.0056, LPIPS=-0.0970
+Verdict: DIP-ref BATDiff does not improve PSNR or SSIM over bicubic-ref BATDiff.
+LPIPS is better (lower) for DIP-ref, but both BATDiff outputs look like high-frequency noise.
+Note: DIP and bicubic numbers are the same full-slice scores as outputs/oct/dip_full/scores.txt.

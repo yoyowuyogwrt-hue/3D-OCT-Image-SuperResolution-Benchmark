@@ -1,8 +1,8 @@
-"""Run DIP on one crop of the OCT B-scan and compare it with bicubic.
+"""Run DIP on one crop of the OCT B-scan and compare with bicubic.
 
-I reuse the 8-bit HR B-scan from scripts/oct_bicubic_baseline.py so the
-intensity window stays the same. I crop 256x256, shrink by x8, fit DIP for a
-fixed number of iterations, and score DIP against bicubic on that same crop.
+I reuse the 8-bit HR from scripts/oct_bicubic_baseline.py, so the intensity
+window is the same. I crop 256x256, shrink x8, train DIP for fixed steps,
+then score DIP and bicubic on this same crop.
 """
 
 from __future__ import annotations
